@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家族基金</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1>家族基金</h1>
+            <div class="year-select">2026年</div>
+            <button class="menu-btn">⋯</button>
+        </header>
+
+        <section class="net-worth-section">
+            <div class="section-header">
+                <h2>基金净值概览</h2>
+                <button class="add-asset-btn" onclick="showAddAssetModal()">+ 添加资产</button>
+            </div>
+            <div class="total-assets">
+                <p class="label">基金总资产</p>
+                <p class="amount" id="totalAssets">¥0.00</p>
+            </div>
+            <div class="pie-chart-container">
+                <div class="pie-chart" id="pieChart"></div>
+                <div class="pie-center">
+                    <span>资产</span>
+                </div>
+            </div>
+            <div class="asset-legend">
+                <div class="legend-item">
+                    <span class="legend-color cash"></span>
+                    <span class="legend-label">现金</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color stock"></span>
+                    <span class="legend-label">股票</span>
+                </div>
+            </div>
+            <div class="asset-cards">
+                <div class="asset-card cash-card">
+                    <div class="asset-header">
+                        <span class="asset-tag cash">现金</span>
+                        <span class="asset-amount" id="cashAmount">¥0.00</span>
+                    </div>
+                    <button class="asset-menu-btn" onclick="showHoldingsModal()">☰</button>
+                </div>
+                <div class="asset-card stock-card">
+                    <div class="asset-header">
+                        <span class="asset-tag stock">股票</span>
+                        <span class="asset-amount" id="stockAmount">¥0.00</span>
+                    </div>
+                    <button class="asset-menu-btn" onclick="showHoldingsModal()">☰</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="records-section">
+            <div class="section-header">
+                <h2>收支明细</h2>
+                <div class="action-buttons">
+                    <button class="export-btn" onclick="exportToExcel()">导出Excel</button>
+                    <button class="add-record-btn" onclick="showAddRecordModal()">+ 添加记录</button>
+                </div>
+            </div>
+            <div class="records-list" id="recordsList"></div>
+        </section>
+    </div>
+
+    <div class="modal" id="addRecordModal">
+        <div class="modal-overlay" onclick="closeAddRecordModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加收支记录</h3>
+            </div>
+            <form id="recordForm">
+                <div class="form-group">
+                    <label>类型</label>
+                    <div class="type-selector">
+                        <button type="button" class="type-btn active" data-type="income">收入</button>
+                        <button type="button" class="type-btn" data-type="expense">支出</button>
+                    </div>
+                    <input type="hidden" id="recordType" value="income">
+                </div>
+                <div class="form-group">
+                    <label>日期</label>
+                    <input type="date" id="recordDate" required>
+                </div>
+                <div class="form-group">
+                    <label>金额</label>
+                    <div class="amount-input-group">
+                        <input type="number" id="recordAmount" step="0.01" min="0" required placeholder="请输入金额">
+                        <div class="amount-actions">
+                            <input type="file" id="recordImageUpload" accept="image/*" style="display: none;" onchange="recognizeRecordImage(event)">
+                            <button type="button" class="amount-action-btn" onclick="document.getElementById('recordImageUpload').click()">📷 上传图片</button>
+                            <button type="button" class="amount-action-btn">手动输入</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>辅助留言</label>
+                    <input type="text" id="recordDescription" placeholder="请输入辅助留言">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAddRecordModal()">取消</button>
+                    <button type="submit" class="confirm-btn">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="addAssetModal">
+        <div class="modal-overlay" onclick="closeAddAssetModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加资产</h3>
+                <button class="close-btn" onclick="closeAddAssetModal()">×</button>
+            </div>
+            <form id="assetForm">
+                <div class="form-group">
+                    <label>资产类型</label>
+                    <div class="type-selector">
+                        <button type="button" class="asset-type-btn active" data-asset-type="cash">现金</button>
+                        <button type="button" class="asset-type-btn" data-asset-type="stock">股票</button>
+                    </div>
+                    <input type="hidden" id="assetType" value="cash">
+                </div>
+                <div class="form-group">
+                    <label>金额</label>
+                    <input type="number" id="assetAmount" step="0.01" min="0" required placeholder="请输入金额">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAddAssetModal()">取消</button>
+                    <button type="submit" class="confirm-btn">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="holdingsModal">
+        <div class="modal-overlay" onclick="closeHoldingsModal()"></div>
+        <div class="modal-content holdings-modal">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeHoldingsModal()">←</button>
+                <h3>持仓明细</h3>
+            </div>
+            <input type="file" id="holdingImageUpload" accept="image/*" style="display: none;" onchange="recognizeHoldingImage(event)">
+            <button class="upload-btn" onclick="document.getElementById('holdingImageUpload').click()">📷 上传股票截图自动识别</button>
+            <div class="cash-balance-card">
+                <div class="cash-balance-header">
+                    <span class="cash-balance-label">现金余额</span>
+                    <span class="cash-balance-amount" id="modalCashAmount">¥0.00</span>
+                </div>
+                <div class="cash-balance-input">
+                    <input type="file" id="cashImageUpload" accept="image/*" style="display: none;" onchange="recognizeCashImage(event)">
+                    <button type="button" class="update-cash-btn" onclick="document.getElementById('cashImageUpload').click()" style="margin-right: 10px;">📷 识别</button>
+                    <input type="number" id="cashBalanceInput" step="0.01" min="0" placeholder="更新余额">
+                    <button class="update-cash-btn" onclick="updateCashBalance()">更新</button>
+                </div>
+            </div>
+            <div class="holdings-section">
+                <div class="holdings-header">
+                    <h4>持仓种类</h4>
+                    <button class="add-holding-btn" onclick="showAddHoldingModal()">+ 添加</button>
+                </div>
+                <div class="holdings-list" id="holdingsList"></div>
+            </div>
+            <button class="close-modal-btn" onclick="closeHoldingsModal()">关闭</button>
+        </div>
+    </div>
+
+    <div class="modal" id="addHoldingModal">
+        <div class="modal-overlay" onclick="closeAddHoldingModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加持仓</h3>
+                <button class="close-btn" onclick="closeAddHoldingModal()">×</button>
+            </div>
+            <form id="holdingForm">
+                <div class="form-group">
+                    <label>名称</label>
+                    <input type="text" id="holdingName" required placeholder="请输入名称">
+                </div>
+                <div class="form-group">
+                    <label>市值</label>
+                    <input type="number" id="holdingValue" step="0.01" min="0" required placeholder="请输入市值">
+                </div>
+                <div class="form-group">
+                    <label>份额</label>
+                    <input type="number" id="holdingShares" step="0.01" min="0" required placeholder="请输入份额">
+                </div>
+                <div class="form-group">
+                    <label>单价</label>
+                    <input type="number" id="holdingPrice" step="0.0001" min="0" required placeholder="请输入单价">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAddHoldingModal()">取消</button>
+                    <button type="submit" class="confirm-btn">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
