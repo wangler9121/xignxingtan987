@@ -1,5 +1,10 @@
-# Git initialization script
+# Git initialization and helper scripts
 init_git.ps1
+update_git.ps1
+push_to_github.ps1
+verify_push.ps1
+simple_push.bat
+debug.log
 
 # OS files
 .DS_Store
