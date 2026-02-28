@@ -40,6 +40,10 @@
                     <span class="legend-color stock"></span>
                     <span class="legend-label">股票</span>
                 </div>
+                <div class="legend-item">
+                    <span class="legend-color other"></span>
+                    <span class="legend-label">其他</span>
+                </div>
             </div>
             <div class="asset-cards">
                 <div class="asset-card cash-card">
@@ -55,6 +59,13 @@
                         <span class="asset-amount" id="stockAmount">¥0.00</span>
                     </div>
                     <button class="asset-menu-btn" onclick="showHoldingsModal()">☰</button>
+                </div>
+                <div class="asset-card other-card">
+                    <div class="asset-header">
+                        <span class="asset-tag other">其他</span>
+                        <span class="asset-amount" id="otherAmount">¥0.00</span>
+                    </div>
+                    <button class="asset-menu-btn" onclick="showOtherHoldingsModal()">☰</button>
                 </div>
             </div>
         </section>
@@ -126,6 +137,7 @@
                     <div class="type-selector">
                         <button type="button" class="asset-type-btn active" data-asset-type="cash">现金</button>
                         <button type="button" class="asset-type-btn" data-asset-type="stock">股票</button>
+                        <button type="button" class="asset-type-btn" data-asset-type="other">其他</button>
                     </div>
                     <input type="hidden" id="assetType" value="cash">
                 </div>
@@ -199,6 +211,64 @@
                 </div>
                 <div class="form-buttons">
                     <button type="button" class="cancel-btn" onclick="closeAddHoldingModal()">取消</button>
+                    <button type="submit" class="confirm-btn">确认</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="otherHoldingsModal">
+        <div class="modal-overlay" onclick="closeOtherHoldingsModal()"></div>
+        <div class="modal-content holdings-modal">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeOtherHoldingsModal()">←</button>
+                <h3>其他资产明细</h3>
+            </div>
+            <div class="other-balance-card">
+                <div class="other-balance-header">
+                    <span class="other-balance-label">其他资产余额</span>
+                    <span class="other-balance-amount" id="modalOtherAmount">¥0.00</span>
+                </div>
+                <div class="other-balance-input">
+                    <input type="file" id="otherImageUpload" accept="image/*" style="display: none;" onchange="recognizeOtherImage(event)">
+                    <button type="button" class="update-other-btn" onclick="document.getElementById('otherImageUpload').click()" style="margin-right: 10px;">📷 识别</button>
+                    <input type="number" id="otherBalanceInput" step="0.01" min="0" placeholder="更新余额">
+                    <button class="update-other-btn" onclick="updateOtherBalance()">更新</button>
+                </div>
+            </div>
+            <div class="other-holdings-section">
+                <div class="other-holdings-header">
+                    <h4>其他资产品类</h4>
+                    <button class="add-other-holding-btn" onclick="showAddOtherHoldingModal()">+ 添加</button>
+                </div>
+                <div class="other-holdings-list" id="otherHoldingsList"></div>
+            </div>
+            <button class="close-modal-btn" onclick="closeOtherHoldingsModal()">关闭</button>
+        </div>
+    </div>
+
+    <div class="modal" id="addOtherHoldingModal">
+        <div class="modal-overlay" onclick="closeAddOtherHoldingModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加其他资产</h3>
+                <button class="close-btn" onclick="closeAddOtherHoldingModal()">×</button>
+            </div>
+            <form id="otherHoldingForm">
+                <div class="form-group">
+                    <label>名称</label>
+                    <input type="text" id="otherHoldingName" required placeholder="请输入名称">
+                </div>
+                <div class="form-group">
+                    <label>市值</label>
+                    <input type="number" id="otherHoldingValue" step="0.01" min="0" required placeholder="请输入市值">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" id="otherHoldingNote" placeholder="请输入备注（可选）">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeAddOtherHoldingModal()">取消</button>
                     <button type="submit" class="confirm-btn">确认</button>
                 </div>
             </form>

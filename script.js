@@ -1,10 +1,12 @@
 let records = [];
-let assets = { cash: 0, stock: 0 };
+let assets = { cash: 0, stock: 0, other: 0 };
 let holdings = [];
+let otherHoldings = [];
 
 const RECORDS_KEY = 'familyFundRecords';
 const ASSETS_KEY = 'familyFundAssets';
 const HOLDINGS_KEY = 'familyFundHoldings';
+const OTHER_HOLDINGS_KEY = 'familyFundOtherHoldings';
 
 function init() {
     loadData();
@@ -21,17 +23,22 @@ function loadData() {
     
     const h = localStorage.getItem(HOLDINGS_KEY);
     if (h) holdings = JSON.parse(h);
+    
+    const oh = localStorage.getItem(OTHER_HOLDINGS_KEY);
+    if (oh) otherHoldings = JSON.parse(oh);
 }
 
 function saveData() {
     localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
     localStorage.setItem(ASSETS_KEY, JSON.stringify(assets));
     localStorage.setItem(HOLDINGS_KEY, JSON.stringify(holdings));
+    localStorage.setItem(OTHER_HOLDINGS_KEY, JSON.stringify(otherHoldings));
 }
 
 function renderAll() {
     renderRecords();
     renderHoldings();
+    renderOtherHoldings();
     updateAssets();
     updatePieChart();
     setToday();
@@ -52,6 +59,9 @@ function setupEvents() {
     
     const hf = document.getElementById('holdingForm');
     if (hf) hf.addEventListener('submit', addHolding);
+    
+    const ohf = document.getElementById('otherHoldingForm');
+    if (ohf) ohf.addEventListener('submit', addOtherHolding);
     
     document.querySelectorAll('.type-btn').forEach(function(b) {
         b.addEventListener('click', function() {
@@ -109,6 +119,26 @@ function showAddHoldingModal() {
 function closeAddHoldingModal() {
     document.getElementById('addHoldingModal').classList.remove('active');
     const f = document.getElementById('holdingForm');
+    if (f) f.reset();
+}
+
+function showOtherHoldingsModal() {
+    document.getElementById('otherHoldingsModal').classList.add('active');
+    const el = document.getElementById('modalOtherAmount');
+    if (el) el.textContent = '¥' + assets.other.toFixed(2);
+}
+
+function closeOtherHoldingsModal() {
+    document.getElementById('otherHoldingsModal').classList.remove('active');
+}
+
+function showAddOtherHoldingModal() {
+    document.getElementById('addOtherHoldingModal').classList.add('active');
+}
+
+function closeAddOtherHoldingModal() {
+    document.getElementById('addOtherHoldingModal').classList.remove('active');
+    const f = document.getElementById('otherHoldingForm');
     if (f) f.reset();
 }
 
@@ -196,25 +226,28 @@ function updateStockFromHoldings() {
 }
 
 function updateAssets() {
-    const total = assets.cash + assets.stock;
+    const total = assets.cash + assets.stock + assets.other;
     const tEl = document.getElementById('totalAssets');
     const cEl = document.getElementById('cashAmount');
     const sEl = document.getElementById('stockAmount');
+    const oEl = document.getElementById('otherAmount');
     if (tEl) tEl.textContent = '¥' + total.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
     if (cEl) cEl.textContent = '¥' + assets.cash.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
     if (sEl) sEl.textContent = '¥' + assets.stock.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    if (oEl) oEl.textContent = '¥' + assets.other.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 function updatePieChart() {
     const pc = document.getElementById('pieChart');
     if (!pc) return;
-    const total = assets.cash + assets.stock;
+    const total = assets.cash + assets.stock + assets.other;
     if (total === 0) {
         pc.style.background = 'conic-gradient(#e0e0e0 0deg 360deg)';
         return;
     }
     const cashDeg = (assets.cash / total) * 360;
-    pc.style.background = 'conic-gradient(#6699cc 0deg ' + cashDeg + 'deg, #4caf50 ' + cashDeg + 'deg 360deg)';
+    const stockDeg = cashDeg + (assets.stock / total) * 360;
+    pc.style.background = 'conic-gradient(#6699cc 0deg ' + cashDeg + 'deg, #4caf50 ' + cashDeg + 'deg ' + stockDeg + 'deg, #ff9800 ' + stockDeg + 'deg 360deg)';
 }
 
 function renderRecords() {
@@ -279,7 +312,8 @@ function extractAmountFromText(text) {
         /([\d,]+\.?\d*)/
     ];
     
-    for (let pattern of patterns) {
+    for (let i = 0; i < patterns.length; i++) {
+        const pattern = patterns[i];
         const match = text.match(pattern);
         if (match) {
             let numStr;
@@ -385,6 +419,100 @@ async function recognizeHoldingImage(event) {
         console.error('识别错误:', error);
         alert('识别失败，请检查网络连接或手动输入');
         showAddHoldingModal();
+    }
+    
+    event.target.value = '';
+}
+
+function updateOtherBalance() {
+    const input = document.getElementById('otherBalanceInput');
+    const amount = parseFloat(input.value);
+    if (!isNaN(amount) && amount >= 0) {
+        assets.other = amount;
+        saveData();
+        updateAssets();
+        updatePieChart();
+        const el = document.getElementById('modalOtherAmount');
+        if (el) el.textContent = '¥' + assets.other.toFixed(2);
+        input.value = '';
+        alert('其他资产余额已更新！');
+    } else {
+        alert('请输入有效的金额');
+    }
+}
+
+function addOtherHolding(e) {
+    e.preventDefault();
+    const h = {
+        id: Date.now(),
+        name: document.getElementById('otherHoldingName').value,
+        value: parseFloat(document.getElementById('otherHoldingValue').value),
+        note: document.getElementById('otherHoldingNote').value || ''
+    };
+    otherHoldings.push(h);
+    updateOtherFromHoldings();
+    saveData();
+    renderOtherHoldings();
+    closeAddOtherHoldingModal();
+}
+
+function deleteOtherHolding(id) {
+    if (confirm('确定要删除这个其他资产吗？')) {
+        otherHoldings = otherHoldings.filter(function(h) { return h.id !== id; });
+        updateOtherFromHoldings();
+        saveData();
+        renderOtherHoldings();
+    }
+}
+
+function updateOtherFromHoldings() {
+    assets.other = otherHoldings.reduce(function(t, h) { return t + h.value; }, 0);
+    saveData();
+    updateAssets();
+    updatePieChart();
+}
+
+function renderOtherHoldings() {
+    const list = document.getElementById('otherHoldingsList');
+    if (!list) return;
+    list.innerHTML = '';
+    otherHoldings.forEach(function(h) {
+        const item = document.createElement('div');
+        item.className = 'other-holding-item';
+        let detailsHtml = '';
+        if (h.note) {
+            detailsHtml = '<div class="other-holding-details">备注: ' + h.note + '</div>';
+        }
+        item.innerHTML = '<div class="other-holding-header"><div class="other-holding-name">' + h.name + '</div><div class="other-holding-actions"><button class="delete-other-holding-btn" onclick="deleteOtherHolding(' + h.id + ')">×</button></div></div><div class="other-holding-value">¥' + h.value.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</div>' + detailsHtml;
+        list.appendChild(item);
+    });
+}
+
+async function recognizeOtherImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+        alert('正在识别其他资产截图，请稍候...\n(首次使用需要下载语言包)');
+        
+        const result = await Tesseract.recognize(file, 'chi_sim+eng', {
+            logger: m => console.log(m)
+        });
+        
+        const text = result.data.text;
+        console.log('识别结果:', text);
+        
+        const amount = extractAmountFromText(text);
+        
+        if (amount) {
+            document.getElementById('otherBalanceInput').value = amount;
+            alert('识别成功！金额: ¥' + amount);
+        } else {
+            alert('未能识别到金额，请手动输入');
+        }
+    } catch (error) {
+        console.error('识别错误:', error);
+        alert('识别失败，请检查网络连接或手动输入');
     }
     
     event.target.value = '';

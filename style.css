@@ -167,6 +167,10 @@ body {
     background: #4caf50;
 }
 
+.legend-color.other {
+    background: #ff9800;
+}
+
 .legend-label {
     font-size: 14px;
     color: #666;
@@ -209,6 +213,10 @@ body {
 
 .asset-tag.stock {
     background: #4caf50;
+}
+
+.asset-tag.other {
+    background: #ff9800;
 }
 
 .asset-amount {
@@ -684,4 +692,137 @@ body {
     font-weight: 700;
     cursor: pointer;
     color: #1a1a2e;
+}
+
+.other-balance-card {
+    background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 3px solid #ff9800;
+}
+
+.other-balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.other-balance-label {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.other-balance-amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #ff9800;
+}
+
+.other-balance-input {
+    display: flex;
+    gap: 14px;
+}
+
+.other-balance-input input {
+    flex: 1;
+    padding: 18px;
+    border: 3px solid #e0e0e0;
+    border-radius: 16px;
+    font-size: 18px;
+}
+
+.update-other-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    border: none;
+    padding: 18px 28px;
+    border-radius: 16px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.other-holdings-section {
+    margin-bottom: 24px;
+}
+
+.other-holdings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.other-holdings-header h4 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.add-other-holding-btn {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.other-holdings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.other-holding-item {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 22px;
+    border: 2px solid #e8e8e8;
+}
+
+.other-holding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.other-holding-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.other-holding-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.delete-other-holding-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 26px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.other-holding-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff9800;
+    margin-bottom: 8px;
+}
+
+.other-holding-details {
+    font-size: 18px;
+    color: #888;
+    line-height: 1.6;
 }
